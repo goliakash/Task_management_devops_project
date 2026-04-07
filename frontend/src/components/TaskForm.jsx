@@ -4,13 +4,22 @@ function TaskForm({ onSubmit }) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [dueDate, setDueDate] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
-    onSubmit({ title, description, dueDate })
-    setTitle('')
-    setDescription('')
-    setDueDate('')
+    setSubmitting(true)
+
+    try {
+      await onSubmit({ title, description, dueDate })
+      setTitle('')
+      setDescription('')
+      setDueDate('')
+    } catch {
+      alert('Could not save task.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -39,7 +48,9 @@ function TaskForm({ onSubmit }) {
         onChange={(event) => setDueDate(event.target.value)}
       />
 
-      <button type="submit">Add Task</button>
+      <button type="submit" disabled={submitting}>
+        {submitting ? 'Submitting...' : 'Add Task'}
+      </button>
     </form>
   )
 }

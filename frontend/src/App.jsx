@@ -8,7 +8,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState('dashboard')
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [taskFilter, setTaskFilter] = useState('all')
 
   useEffect(() => {
     if (currentPage !== 'dashboard') {
@@ -19,7 +19,6 @@ function App() {
 
     async function loadTasks() {
       setLoading(true)
-      setError('')
 
       try {
         const data = await getTasks()
@@ -29,9 +28,7 @@ function App() {
           setTasks(taskList)
         }
       } catch {
-        if (isActive) {
-          setError('Could not load tasks.')
-        }
+        alert('Could not load tasks.')
       } finally {
         if (isActive) {
           setLoading(false)
@@ -50,13 +47,29 @@ function App() {
     return task.id ?? task._id
   }
 
+  function getTaskStatus(task) {
+    return String(task.status || '').toLowerCase()
+  }
+
+  const filteredTasks = tasks.filter((task) => {
+    if (taskFilter === 'completed') {
+      return getTaskStatus(task) === 'completed'
+    }
+
+    if (taskFilter === 'pending') {
+      return getTaskStatus(task) === 'pending'
+    }
+
+    return true
+  })
+
   async function handleAddTask(taskData) {
     try {
       const data = await createTask(taskData)
       const createdTask = data?.task || data
       setTasks((currentTasks) => [...currentTasks, createdTask])
     } catch {
-      setError('Could not add task.')
+      throw new Error('Could not add task.')
     }
   }
 
@@ -67,7 +80,7 @@ function App() {
         currentTasks.filter((task) => getTaskId(task) !== taskId),
       )
     } catch {
-      setError('Could not delete task.')
+      alert('Could not delete task.')
     }
   }
 
@@ -94,7 +107,7 @@ function App() {
         ),
       )
     } catch {
-      setError('Could not update task.')
+      alert('Could not update task.')
     }
   }
 
@@ -119,15 +132,25 @@ function App() {
         {currentPage === 'dashboard' ? (
           <div className="dashboard-page">
             <h2>My Tasks</h2>
+            <div className="task-filters">
+              <button type="button" onClick={() => setTaskFilter('all')}>
+                All
+              </button>
+              <button type="button" onClick={() => setTaskFilter('completed')}>
+                Completed
+              </button>
+              <button type="button" onClick={() => setTaskFilter('pending')}>
+                Pending
+              </button>
+            </div>
             <div>
               <button type="button">Add Task</button>
             </div>
             <TaskForm onSubmit={handleAddTask} />
             {loading ? <div>Loading tasks...</div> : null}
-            {error ? <div>{error}</div> : null}
-            {!loading && !error ? (
+            {!loading ? (
               <TaskList
-                tasks={tasks}
+                tasks={filteredTasks}
                 onDelete={handleDeleteTask}
                 onComplete={handleCompleteTask}
               />

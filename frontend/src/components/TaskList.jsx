@@ -6,7 +6,7 @@ function TaskList({ tasks, onDelete, onComplete }) {
   return (
     <div className="task-list">
       {tasks.map((task) => (
-        <div key={task.id} className="task-card">
+        <div key={task.id ?? task._id} className="task-card">
           <h3>{task.title}</h3>
           <p>{task.description}</p>
           <p>Status: {task.status}</p>
