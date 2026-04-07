@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import TaskList from './components/TaskList'
-import TaskForm from './components/TaskForm'
+import Navigation from './components/Navigation'
+import DashboardPage from './components/DashboardPage'
+import AuthPage from './components/AuthPage'
 import { createTask, deleteTask, getTasks, updateTask } from './services/api'
 
 function App() {
@@ -113,75 +114,26 @@ function App() {
 
   return (
     <div className="app">
-      <nav className="navbar">
-        <h1>Task Manager</h1>
-        <div className="nav-links">
-          <button type="button" onClick={() => setCurrentPage('dashboard')}>
-            Dashboard
-          </button>
-          <button type="button" onClick={() => setCurrentPage('login')}>
-            Login
-          </button>
-          <button type="button" onClick={() => setCurrentPage('register')}>
-            Register
-          </button>
-        </div>
-      </nav>
+      <Navigation onNavigate={setCurrentPage} />
 
       <main className="content">
         {currentPage === 'dashboard' ? (
-          <div className="dashboard-page">
-            <h2>My Tasks</h2>
-            <div className="task-filters">
-              <button type="button" onClick={() => setTaskFilter('all')}>
-                All
-              </button>
-              <button type="button" onClick={() => setTaskFilter('completed')}>
-                Completed
-              </button>
-              <button type="button" onClick={() => setTaskFilter('pending')}>
-                Pending
-              </button>
-            </div>
-            <div>
-              <button type="button">Add Task</button>
-            </div>
-            <TaskForm onSubmit={handleAddTask} />
-            {loading ? <div>Loading tasks...</div> : null}
-            {!loading ? (
-              <TaskList
-                tasks={filteredTasks}
-                onDelete={handleDeleteTask}
-                onComplete={handleCompleteTask}
-              />
-            ) : null}
-          </div>
+          <DashboardPage
+            loading={loading}
+            tasks={filteredTasks}
+            onFilterChange={setTaskFilter}
+            onAddTask={handleAddTask}
+            onDeleteTask={handleDeleteTask}
+            onCompleteTask={handleCompleteTask}
+          />
         ) : currentPage === 'login' ? (
-          <section className="form-page">
-            <h2>Login</h2>
-            <form className="auth-form">
-              <label htmlFor="login-email">Email</label>
-              <input id="login-email" type="email" />
-
-              <label htmlFor="login-password">Password</label>
-              <input id="login-password" type="password" />
-
-              <button type="submit">Submit</button>
-            </form>
-          </section>
+          <AuthPage title="Login" emailId="login-email" passwordId="login-password" />
         ) : (
-          <section className="form-page">
-            <h2>Register</h2>
-            <form className="auth-form">
-              <label htmlFor="register-email">Email</label>
-              <input id="register-email" type="email" />
-
-              <label htmlFor="register-password">Password</label>
-              <input id="register-password" type="password" />
-
-              <button type="submit">Submit</button>
-            </form>
-          </section>
+          <AuthPage
+            title="Register"
+            emailId="register-email"
+            passwordId="register-password"
+          />
         )}
       </main>
     </div>
