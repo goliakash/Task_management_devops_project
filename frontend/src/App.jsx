@@ -9,7 +9,6 @@ function App() {
   const [currentPage, setCurrentPage] = useState('dashboard')
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(false)
-  const [taskFilter, setTaskFilter] = useState('all')
 
   useEffect(() => {
     if (currentPage !== 'dashboard') {
@@ -48,29 +47,17 @@ function App() {
     return task.id ?? task._id
   }
 
-  function getTaskStatus(task) {
-    return String(task.status || '').toLowerCase()
-  }
-
-  const filteredTasks = tasks.filter((task) => {
-    if (taskFilter === 'completed') {
-      return getTaskStatus(task) === 'completed'
-    }
-
-    if (taskFilter === 'pending') {
-      return getTaskStatus(task) === 'pending'
-    }
-
-    return true
-  })
-
   async function handleAddTask(taskData) {
     try {
-      const data = await createTask(taskData)
+      const newTaskData = {
+        ...taskData,
+        status: 'Pending',
+      }
+      const data = await createTask(newTaskData)
       const createdTask = data?.task || data
       setTasks((currentTasks) => [...currentTasks, createdTask])
     } catch {
-      throw new Error('Could not add task.')
+      throw new Error('Task could not be added. Please try again.')
     }
   }
 
@@ -86,6 +73,10 @@ function App() {
   }
 
   async function handleCompleteTask(taskId) {
+    await handleMoveTask(taskId, 'Completed')
+  }
+
+  async function handleMoveTask(taskId, newStatus) {
     const currentTask = tasks.find((task) => getTaskId(task) === taskId)
 
     if (!currentTask) {
@@ -94,8 +85,8 @@ function App() {
 
     const updatedTask = {
       ...currentTask,
-      status: 'Completed',
-      completed: true,
+      status: newStatus,
+      completed: String(newStatus).toLowerCase() === 'completed',
     }
 
     try {
@@ -114,17 +105,18 @@ function App() {
 
   return (
     <div className="app">
-      <Navigation onNavigate={setCurrentPage} />
+      <Navigation currentPage={currentPage} onNavigate={setCurrentPage} />
 
       <main className="content">
         {currentPage === 'dashboard' ? (
           <DashboardPage
             loading={loading}
-            tasks={filteredTasks}
-            onFilterChange={setTaskFilter}
+            allTasks={tasks}
+            tasks={tasks}
             onAddTask={handleAddTask}
             onDeleteTask={handleDeleteTask}
             onCompleteTask={handleCompleteTask}
+            onMoveTask={handleMoveTask}
           />
         ) : currentPage === 'login' ? (
           <AuthPage title="Login" emailId="login-email" passwordId="login-password" />

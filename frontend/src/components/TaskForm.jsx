@@ -15,8 +15,8 @@ function TaskForm({ onSubmit }) {
       setTitle('')
       setDescription('')
       setDueDate('')
-    } catch {
-      alert('Could not save task.')
+    } catch (error) {
+      alert(error.message || 'Unable to save task right now.')
     } finally {
       setSubmitting(false)
     }
@@ -28,14 +28,17 @@ function TaskForm({ onSubmit }) {
       <input
         id="task-title"
         type="text"
+        placeholder="Enter task title"
         value={title}
         onChange={(event) => setTitle(event.target.value)}
+        required
       />
 
       <label htmlFor="task-description">Description</label>
       <textarea
         id="task-description"
         rows="4"
+        placeholder="Add a short description"
         value={description}
         onChange={(event) => setDescription(event.target.value)}
       />
