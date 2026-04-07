@@ -7,9 +7,23 @@ const taskSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    completed: {
-      type: Boolean,
-      default: false,
+    description: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "completed"],
+      default: "pending",
+    },
+    dueDate: {
+      type: Date,
+    },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
   },
   { timestamps: true }
