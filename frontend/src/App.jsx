@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import './App.css'
 import TaskList from './components/TaskList'
+import TaskForm from './components/TaskForm'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('dashboard')
@@ -43,6 +44,7 @@ function App() {
             <div>
               <button type="button">Add Task</button>
             </div>
+            <TaskForm />
             <TaskList tasks={tasks} />
           </div>
         ) : currentPage === 'login' ? (

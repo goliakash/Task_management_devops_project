@@ -93,6 +93,36 @@
   padding: 6px 10px;
 }
 
+.task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.task-form textarea {
+  border: 1px solid #cccccc;
+  padding: 10px;
+  font-size: 16px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.task-form input {
+  border: 1px solid #cccccc;
+  padding: 10px;
+  font-size: 16px;
+}
+
+.task-form button {
+  margin-top: 8px;
+  border: 1px solid #cccccc;
+  background: #ffffff;
+  padding: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
 .form-page {
   width: 100%;
   max-width: 360px;
