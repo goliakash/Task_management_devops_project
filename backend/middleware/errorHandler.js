@@ -5,9 +5,26 @@ const notFound = (req, res, next) => {
 };
 
 const errorHandler = (err, req, res, next) => {
-  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+
+  if (err.status && res.statusCode === 200) {
+    statusCode = err.status;
+  }
+
+  if (err.name === "ValidationError" || err.name === "CastError") {
+    statusCode = 400;
+  }
+
+  if (err.code === 11000) {
+    statusCode = 409;
+  }
+
+  if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+    statusCode = 400;
+  }
+
   res.status(statusCode).json({
-    message: err.message,
+    message: err.message || "Server error",
   });
 };
 
