@@ -1,8 +1,23 @@
 import { useState } from 'react'
 import './App.css'
+import TaskList from './components/TaskList'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('dashboard')
+  const tasks = [
+    {
+      id: 1,
+      title: 'Finish assignment',
+      description: 'Complete the React task manager project.',
+      status: 'Pending',
+    },
+    {
+      id: 2,
+      title: 'Study for class',
+      description: 'Review notes for the next lecture.',
+      status: 'In Progress',
+    },
+  ]
 
   return (
     <div className="app">
@@ -28,7 +43,7 @@ function App() {
             <div>
               <button type="button">Add Task</button>
             </div>
-            <div>No tasks available</div>
+            <TaskList tasks={tasks} />
           </div>
         ) : currentPage === 'login' ? (
           <section className="form-page">

@@ -62,6 +62,37 @@
   margin-bottom: 12px;
 }
 
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.task-card {
+  border: 1px solid #dddddd;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.task-card h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.task-card p {
+  margin: 0 0 8px;
+}
+
+.task-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.task-actions button {
+  margin: 0;
+  padding: 6px 10px;
+}
+
 .form-page {
   width: 100%;
   max-width: 360px;
