@@ -1,38 +1,20 @@
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { z } = require("zod");
 
 const SALT_ROUNDS = 10;
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-const validateCredentialsInput = (email, password, options = {}) => {
-  const { enforcePasswordLength = false } = options;
+// Zod schemas for validation
+const registerSchema = z.object({
+  email: z.string().trim().toLowerCase().email({ message: "Invalid email format" }),
+  password: z.string().trim().min(6, { message: "Password must be at least 6 characters" })
+});
 
-  if (!email || !password) {
-    return { message: "Email and password are required" };
-  }
-
-  if (typeof email !== "string" || typeof password !== "string") {
-    return { message: "Email and password must be strings" };
-  }
-
-  const normalizedEmail = email.trim().toLowerCase();
-  const trimmedPassword = password.trim();
-
-  if (!normalizedEmail || !trimmedPassword) {
-    return { message: "Email and password are required" };
-  }
-
-  if (!EMAIL_REGEX.test(normalizedEmail)) {
-    return { message: "Invalid email format" };
-  }
-
-  if (enforcePasswordLength && trimmedPassword.length < 6) {
-    return { message: "Password must be at least 6 characters" };
-  }
-
-  return { normalizedEmail, trimmedPassword };
-};
+const loginSchema = z.object({
+  email: z.string().trim().toLowerCase().email({ message: "Invalid email format" }),
+  password: z.string().trim().min(1, { message: "Password is required" })
+});
 
 const formatUserResponse = (user) => ({
   id: user._id,
@@ -41,14 +23,14 @@ const formatUserResponse = (user) => ({
 
 const registerUser = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
-    const credentials = validateCredentialsInput(email, password, { enforcePasswordLength: true });
-
-    if (credentials.message) {
-      return res.status(400).json({ message: credentials.message });
+    const validationResult = registerSchema.safeParse(req.body);
+    
+    if (!validationResult.success) {
+      const errorMessage = validationResult.error.errors[0].message;
+      return res.status(400).json({ message: errorMessage });
     }
 
-    const { normalizedEmail, trimmedPassword } = credentials;
+    const { email: normalizedEmail, password: trimmedPassword } = validationResult.data;
 
     const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
@@ -69,18 +51,18 @@ const registerUser = async (req, res, next) => {
 
 const loginUser = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
-    const credentials = validateCredentialsInput(email, password);
+    const validationResult = loginSchema.safeParse(req.body);
 
     if (!process.env.JWT_SECRET) {
       return res.status(500).json({ message: "JWT_SECRET is not configured" });
     }
 
-    if (credentials.message) {
-      return res.status(400).json({ message: credentials.message });
+    if (!validationResult.success) {
+      const errorMessage = validationResult.error.errors[0].message;
+      return res.status(400).json({ message: errorMessage });
     }
 
-    const { normalizedEmail, trimmedPassword } = credentials;
+    const { email: normalizedEmail, password: trimmedPassword } = validationResult.data;
 
     const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
