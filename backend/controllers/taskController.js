@@ -1,14 +1,12 @@
-const Task = require("../models/Task");
+const getTasks = (req, res) => {
+  res.status(200).json({ message: "Get tasks placeholder" });
+};
 
-const getTasks = async (req, res, next) => {
-  try {
-    const tasks = await Task.find();
-    res.status(200).json(tasks);
-  } catch (error) {
-    next(error);
-  }
+const createTask = (req, res) => {
+  res.status(201).json({ message: "Create task placeholder" });
 };
 
 module.exports = {
   getTasks,
+  createTask,
 };
