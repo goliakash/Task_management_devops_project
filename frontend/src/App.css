@@ -1,25 +1,30 @@
 .app {
-  --text: #f6f6f8;
-  --text-soft: #a2a3ad;
-  --panel: #131316;
-  --panel-2: #18181d;
-  --border: #2b2d35;
-  --accent: #3bc6a8;
-  --accent-2: #248f79;
-  max-width: 1120px;
+  --bg-primary: #0b0d14;
+  --bg-secondary: #131620;
+  --bg-tertiary: #191d29;
+  --border: #232839;
+  --border-hover: #353b50;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --accent: #2563eb;
+  --accent-hover: #3b82f6;
+  --accent-text: #ffffff;
+  --danger: #ef4444;
+
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 30px 20px 40px;
-  color: var(--text);
+  padding: 30px 20px 60px;
+  color: var(--text-primary);
   box-sizing: border-box;
 }
 
+/* Navbar */
 .navbar {
-  margin-bottom: 22px;
-  padding: 18px 22px;
+  margin-bottom: 24px;
+  padding: 16px 24px;
   border: 1px solid var(--border);
-  border-radius: 16px;
-  background: linear-gradient(160deg, #17171c 0%, #111114 100%);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  border-radius: 8px;
+  background: var(--bg-secondary);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -27,233 +32,279 @@
 
 .navbar h1 {
   margin: 0;
-  font-size: 30px;
-  font-weight: 800;
-  letter-spacing: 0.3px;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
 }
 
 .nav-links {
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
 .nav-links button {
-  margin: 0;
-  padding: 9px 15px;
-  border: 1px solid #30333d;
-  border-radius: 9px;
-  background: #1e2027;
-  color: var(--text);
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
+  transition: all 0.15s ease;
 }
 
 .nav-links button:hover {
-  transform: translateY(-1px);
-  border-color: #424552;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .nav-links button.active {
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
-  border-color: transparent;
-  color: #07130f;
-  font-weight: 700;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
 }
 
+/* Page Layout */
 .content {
   width: 100%;
 }
 
 .dashboard-page {
-  width: 100%;
   display: grid;
-  gap: 14px;
+  gap: 20px;
 }
 
 .panel {
   border: 1px solid var(--border);
-  border-radius: 16px;
-  background: linear-gradient(180deg, var(--panel-2) 0%, var(--panel) 100%);
-  padding: 18px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  padding: 20px;
 }
 
 .dashboard-page h2 {
-  margin: 0;
-  font-size: 25px;
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .dashboard-page h3 {
   margin: 0 0 12px;
-  font-size: 19px;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .muted {
-  color: var(--text-soft);
+  color: var(--text-secondary);
 }
 
+/* Task Summary Tags */
 .task-summary {
-  margin-top: 12px;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin-bottom: 20px;
 }
 
 .task-summary span {
-  border: 1px solid #343846;
-  border-radius: 999px;
-  padding: 6px 10px;
-  background: #1a1d25;
-  color: #d4d8df;
-  font-size: 13px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 10px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
 }
 
+/* Kanban Board */
 .kanban-board {
   display: grid;
-  grid-template-columns: repeat(3, minmax(240px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(280px, 1fr));
+  gap: 16px;
 }
 
 .kanban-column {
-  border: 1px solid #30333c;
-  border-radius: 14px;
-  background: #15171d;
-  padding: 11px;
-  min-height: 290px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  padding: 16px;
+  min-height: 320px;
 }
 
 .kanban-column h4 {
-  margin: 0;
-  font-size: 16px;
+  margin: 0 0 16px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.kanban-column.drag-over {
-  border-color: var(--accent);
-  background: #16231f;
-}
-
+/* Task Cards */
 .task-card {
-  border: 1px solid #313542;
-  background: #1b1d25;
-  border-radius: 12px;
-  padding: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  padding: 16px;
   margin-bottom: 12px;
-  cursor: grab;
+  cursor: default;
+  transition: border-color 0.15s ease;
 }
 
 .task-card:hover {
-  border-color: #434959;
-}
-
-.task-card h3 {
-  margin: 0;
-  font-size: 16px;
-}
-
-.task-card p {
-  margin: 10px 0;
-  color: #c0c5ce;
+  border-color: var(--border-hover);
 }
 
 .task-card-top {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.task-card h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.task-card p {
+  margin: 12px 0;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Actions */
+.task-actions {
+  display: flex;
   gap: 8px;
+  margin-top: 16px;
 }
 
 .task-actions button {
-  margin-right: 8px;
-  border: 1px solid #353a48;
-  border-radius: 8px;
-  background: #20232d;
-  color: #eceef3;
-  padding: 7px 12px;
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.1s ease;
 }
 
 .task-actions button:hover {
-  background: #2a2e3b;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
 }
 
-.task-form {
-  margin-bottom: 0;
+/* Forms */
+.task-form,
+.auth-form {
+  display: flex;
+  flex-direction: column;
 }
 
-.task-form textarea,
+.form-page {
+  max-width: 400px;
+  margin: 40px auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  padding: 32px 24px;
+}
+
+.form-page h2 {
+  margin: 0 0 24px 0;
+  font-size: 22px;
+  text-align: center;
+}
+
 .task-form input,
+.task-form textarea,
 .auth-form input {
   width: 100%;
-  border: 1px solid #353947;
-  border-radius: 9px;
-  background: #14161c;
-  color: #f5f6fa;
-  padding: 10px;
-  margin: 6px 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  margin-bottom: 12px;
   box-sizing: border-box;
+  transition: border-color 0.15s ease;
 }
 
-.task-form textarea::placeholder,
+.task-form input:focus,
+.task-form textarea:focus,
+.auth-form input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 .task-form input::placeholder,
+.task-form textarea::placeholder,
 .auth-form input::placeholder {
-  color: #7e8391;
+  color: #64748b;
+}
+
+.task-form textarea {
+  resize: vertical;
+  min-height: 80px;
 }
 
 .task-form button,
 .auth-form button {
-  margin-top: 6px;
-  border: 1px solid transparent;
-  border-radius: 9px;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
-  color: #06120e;
-  font-weight: 700;
-  padding: 10px 12px;
-  cursor: pointer;
-}
-
-.task-form button:hover,
-.auth-form button:hover {
-  filter: brightness(1.05);
-}
-
-.form-page {
   width: 100%;
-  max-width: 460px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  background: linear-gradient(180deg, var(--panel-2) 0%, var(--panel) 100%);
-  padding: 18px;
-  margin: 0 auto;
+  background: var(--accent);
+  color: var(--accent-text);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.15s ease;
 }
 
-.form-page h2 {
-  margin: 0 0 14px;
-}
-
-.empty-state {
-  border: 1px dashed #3a4050;
-  border-radius: 10px;
-  padding: 16px;
-  color: #8f96a8;
-  background: #15171d;
+.task-form button:hover:not(:disabled),
+.auth-form button:hover:not(:disabled) {
+  background: var(--accent-hover);
 }
 
 button:disabled {
-  opacity: 0.55;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-@media (max-width: 760px) {
-  .app {
-    padding: 14px 12px 30px;
-  }
+.empty-state {
+  border: 1px dashed var(--border-hover);
+  border-radius: 6px;
+  padding: 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
 
+@media (max-width: 768px) {
+  .app {
+    padding: 16px;
+  }
   .navbar {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
+    align-items: stretch;
+    text-align: center;
+    gap: 16px;
   }
-
+  .nav-links {
+    justify-content: center;
+  }
   .kanban-board {
     grid-template-columns: 1fr;
   }
