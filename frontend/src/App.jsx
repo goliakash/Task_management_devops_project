@@ -1,24 +1,102 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 import TaskList from './components/TaskList'
 import TaskForm from './components/TaskForm'
+import { createTask, deleteTask, getTasks, updateTask } from './services/api'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('dashboard')
-  const tasks = [
-    {
-      id: 1,
-      title: 'Finish assignment',
-      description: 'Complete the React task manager project.',
-      status: 'Pending',
-    },
-    {
-      id: 2,
-      title: 'Study for class',
-      description: 'Review notes for the next lecture.',
-      status: 'In Progress',
-    },
-  ]
+  const [tasks, setTasks] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (currentPage !== 'dashboard') {
+      return
+    }
+
+    let isActive = true
+
+    async function loadTasks() {
+      setLoading(true)
+      setError('')
+
+      try {
+        const data = await getTasks()
+        const taskList = Array.isArray(data) ? data : data?.tasks || []
+
+        if (isActive) {
+          setTasks(taskList)
+        }
+      } catch {
+        if (isActive) {
+          setError('Could not load tasks.')
+        }
+      } finally {
+        if (isActive) {
+          setLoading(false)
+        }
+      }
+    }
+
+    loadTasks()
+
+    return () => {
+      isActive = false
+    }
+  }, [currentPage])
+
+  function getTaskId(task) {
+    return task.id ?? task._id
+  }
+
+  async function handleAddTask(taskData) {
+    try {
+      const data = await createTask(taskData)
+      const createdTask = data?.task || data
+      setTasks((currentTasks) => [...currentTasks, createdTask])
+    } catch {
+      setError('Could not add task.')
+    }
+  }
+
+  async function handleDeleteTask(taskId) {
+    try {
+      await deleteTask(taskId)
+      setTasks((currentTasks) =>
+        currentTasks.filter((task) => getTaskId(task) !== taskId),
+      )
+    } catch {
+      setError('Could not delete task.')
+    }
+  }
+
+  async function handleCompleteTask(taskId) {
+    const currentTask = tasks.find((task) => getTaskId(task) === taskId)
+
+    if (!currentTask) {
+      return
+    }
+
+    const updatedTask = {
+      ...currentTask,
+      status: 'Completed',
+      completed: true,
+    }
+
+    try {
+      const data = await updateTask(taskId, updatedTask)
+      const savedTask = data?.task || data || updatedTask
+
+      setTasks((currentTasks) =>
+        currentTasks.map((task) =>
+          getTaskId(task) === taskId ? savedTask : task,
+        ),
+      )
+    } catch {
+      setError('Could not update task.')
+    }
+  }
 
   return (
     <div className="app">
@@ -44,8 +122,16 @@ function App() {
             <div>
               <button type="button">Add Task</button>
             </div>
-            <TaskForm />
-            <TaskList tasks={tasks} />
+            <TaskForm onSubmit={handleAddTask} />
+            {loading ? <div>Loading tasks...</div> : null}
+            {error ? <div>{error}</div> : null}
+            {!loading && !error ? (
+              <TaskList
+                tasks={tasks}
+                onDelete={handleDeleteTask}
+                onComplete={handleCompleteTask}
+              />
+            ) : null}
           </div>
         ) : currentPage === 'login' ? (
           <section className="form-page">
