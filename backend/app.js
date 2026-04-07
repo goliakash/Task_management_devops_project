@@ -1,1 +1,18 @@
-console.log("Hello World! This is the backend of the Task Management DevOps Project.");
+const express = require("express");
+const taskRoutes = require("./routes/taskRoutes");
+const { notFound, errorHandler } = require("./middleware/errorHandler");
+
+const app = express();
+
+app.use(express.json());
+
+app.get("/", (req, res) => {
+	res.json({ message: "Task Management API is running" });
+});
+
+app.use("/api/tasks", taskRoutes);
+
+app.use(notFound);
+app.use(errorHandler);
+
+module.exports = app;
