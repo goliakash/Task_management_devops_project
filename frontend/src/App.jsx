@@ -4,14 +4,36 @@ import Sidebar from './components/Sidebar'
 import Header from './components/Header'
 import DashboardPage from './components/DashboardPage'
 import AuthPage from './components/AuthPage'
-import { createTask, deleteTask, getTasks, updateTask } from './services/api'
+import {
+  clearToken,
+  createTask,
+  deleteTask,
+  getTasks,
+  getToken,
+  login,
+  register,
+  updateTask,
+} from './services/api'
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('dashboard')
+  const [isAuthenticated, setIsAuthenticated] = useState(Boolean(getToken()))
+  const [currentPage, setCurrentPage] = useState(
+    isAuthenticated ? 'dashboard' : 'login',
+  )
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      setTasks([])
+
+      if (currentPage === 'dashboard') {
+        setCurrentPage('login')
+      }
+
+      return
+    }
+
     if (currentPage !== 'dashboard') {
       return
     }
@@ -42,7 +64,37 @@ function App() {
     return () => {
       isActive = false
     }
-  }, [currentPage])
+  }, [currentPage, isAuthenticated])
+
+  async function handleLogin(credentials) {
+    try {
+      await login(credentials)
+      setIsAuthenticated(true)
+      setCurrentPage('dashboard')
+    } catch (error) {
+      const errorMessage = error?.response?.data?.message || 'Login failed.'
+      throw new Error(errorMessage)
+    }
+  }
+
+  async function handleRegister(userData) {
+    try {
+      await register(userData)
+      alert('Registration successful. Please log in.')
+      setCurrentPage('login')
+    } catch (error) {
+      const errorMessage =
+        error?.response?.data?.message || 'Registration failed.'
+      throw new Error(errorMessage)
+    }
+  }
+
+  function handleLogout() {
+    clearToken()
+    setIsAuthenticated(false)
+    setTasks([])
+    setCurrentPage('login')
+  }
 
   function getTaskId(task) {
     return task.id ?? task._id
@@ -132,6 +184,41 @@ function App() {
             </div>
           )}
         </div>
+      <Navigation
+        currentPage={currentPage}
+        onNavigate={setCurrentPage}
+        isAuthenticated={isAuthenticated}
+        onLogout={handleLogout}
+      />
+
+      <main className="content">
+        {isAuthenticated && currentPage === 'dashboard' ? (
+          <DashboardPage
+            loading={loading}
+            allTasks={tasks}
+            tasks={tasks}
+            onAddTask={handleAddTask}
+            onDeleteTask={handleDeleteTask}
+            onCompleteTask={handleCompleteTask}
+            onMoveTask={handleMoveTask}
+          />
+        ) : currentPage === 'login' ? (
+          <AuthPage
+            title="Login"
+            emailId="login-email"
+            passwordId="login-password"
+            onSubmit={handleLogin}
+            submitLabel="Login"
+          />
+        ) : (
+          <AuthPage
+            title="Register"
+            emailId="register-email"
+            passwordId="register-password"
+            onSubmit={handleRegister}
+            submitLabel="Register"
+          />
+        )}
       </main>
     </div>
   )
