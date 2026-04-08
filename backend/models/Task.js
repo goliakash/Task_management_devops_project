@@ -14,8 +14,13 @@ const taskSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "completed"],
-      default: "pending",
+      enum: ["Backlog", "To Do", "In Progress", "Need Review", "Completed"],
+      default: "Backlog",
+    },
+    priority: {
+      type: String,
+      enum: ["High", "Medium", "Low"],
+      default: "Low",
     },
     dueDate: {
       type: Date,
@@ -25,6 +30,18 @@ const taskSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    attachmentCount: {
+      type: Number,
+      default: 0,
+    },
+    commentCount: {
+      type: Number,
+      default: 0,
+    },
+    tags: {
+      type: [String],
+      default: [],
+    }
   },
   { timestamps: true }
 );
