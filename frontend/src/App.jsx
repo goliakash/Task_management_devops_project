@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import './App.css'
-import Navigation from './components/Navigation'
+import Sidebar from './components/Sidebar'
+import Header from './components/Header'
 import DashboardPage from './components/DashboardPage'
 import AuthPage from './components/AuthPage'
 import { createTask, deleteTask, getTasks, updateTask } from './services/api'
@@ -51,7 +52,7 @@ function App() {
     try {
       const newTaskData = {
         ...taskData,
-        status: 'Pending',
+        status: 'Backlog', // Updated default status to match new columns
       }
       const data = await createTask(newTaskData)
       const createdTask = data?.task || data
@@ -72,9 +73,6 @@ function App() {
     }
   }
 
-  async function handleCompleteTask(taskId) {
-    await handleMoveTask(taskId, 'Completed')
-  }
 
   async function handleMoveTask(taskId, newStatus) {
     const currentTask = tasks.find((task) => getTaskId(task) === taskId)
@@ -86,7 +84,7 @@ function App() {
     const updatedTask = {
       ...currentTask,
       status: newStatus,
-      completed: String(newStatus).toLowerCase() === 'completed',
+      completed: String(newStatus).toLowerCase() === 'completed' || String(newStatus).toLowerCase() === 'need review',
     }
 
     try {
@@ -105,28 +103,35 @@ function App() {
 
   return (
     <div className="app">
-      <Navigation currentPage={currentPage} onNavigate={setCurrentPage} />
+      <Sidebar currentPage={currentPage} onNavigate={setCurrentPage} />
 
-      <main className="content">
-        {currentPage === 'dashboard' ? (
-          <DashboardPage
-            loading={loading}
-            allTasks={tasks}
-            tasks={tasks}
-            onAddTask={handleAddTask}
-            onDeleteTask={handleDeleteTask}
-            onCompleteTask={handleCompleteTask}
-            onMoveTask={handleMoveTask}
-          />
-        ) : currentPage === 'login' ? (
-          <AuthPage title="Login" emailId="login-email" passwordId="login-password" />
-        ) : (
-          <AuthPage
-            title="Register"
-            emailId="register-email"
-            passwordId="register-password"
-          />
-        )}
+      <main className="main-wrapper">
+        <Header />
+        
+        <div className="content">
+          {currentPage === 'dashboard' ? (
+            <DashboardPage
+              loading={loading}
+              tasks={tasks}
+              onAddTask={handleAddTask}
+              onDeleteTask={handleDeleteTask}
+              onMoveTask={handleMoveTask}
+            />
+          ) : currentPage === 'login' ? (
+            <AuthPage title="Login" emailId="login-email" passwordId="login-password" />
+          ) : currentPage === 'register' ? (
+            <AuthPage
+              title="Register"
+              emailId="register-email"
+              passwordId="register-password"
+            />
+          ) : (
+            <div className="placeholder-page">
+              <h2>{currentPage.charAt(0).toUpperCase() + currentPage.slice(1)} Page</h2>
+              <p>This page is not yet implemented in the demo.</p>
+            </div>
+          )}
+        </div>
       </main>
     </div>
   )

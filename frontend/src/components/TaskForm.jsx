@@ -3,6 +3,7 @@ import { useState } from 'react'
 function TaskForm({ onSubmit }) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [priority, setPriority] = useState('Low')
   const [dueDate, setDueDate] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
@@ -11,9 +12,10 @@ function TaskForm({ onSubmit }) {
     setSubmitting(true)
 
     try {
-      await onSubmit({ title, description, dueDate })
+      await onSubmit({ title, description, priority, dueDate })
       setTitle('')
       setDescription('')
+      setPriority('Low')
       setDueDate('')
     } catch (error) {
       alert(error.message || 'Unable to save task right now.')
@@ -42,6 +44,18 @@ function TaskForm({ onSubmit }) {
         value={description}
         onChange={(event) => setDescription(event.target.value)}
       />
+
+      <label htmlFor="task-priority">Priority</label>
+      <select 
+        id="task-priority"
+        value={priority}
+        onChange={(event) => setPriority(event.target.value)}
+        style={{ width: '100%', padding: '10px 12px', border: '1px solid var(--border-color)', borderRadius: '6px', marginBottom: '16px', fontSize: '14px' }}
+      >
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+      </select>
 
       <label htmlFor="task-due-date">Due Date</label>
       <input
