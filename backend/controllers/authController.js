@@ -7,6 +7,7 @@ const SALT_ROUNDS = 10;
 
 // Zod schemas for validation
 const registerSchema = z.object({
+  name: z.string().trim().min(2, { message: "Name must be at least 2 characters" }),
   email: z.string().trim().toLowerCase().email({ message: "Invalid email format" }),
   password: z.string().trim().min(6, { message: "Password must be at least 6 characters" })
 });
@@ -18,6 +19,7 @@ const loginSchema = z.object({
 
 const formatUserResponse = (user) => ({
   id: user._id,
+  name: user.name,
   email: user.email,
 });
 
@@ -30,7 +32,7 @@ const registerUser = async (req, res, next) => {
       return res.status(400).json({ message: errorMessage });
     }
 
-    const { email: normalizedEmail, password: trimmedPassword } = validationResult.data;
+    const { name, email: normalizedEmail, password: trimmedPassword } = validationResult.data;
 
     const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
@@ -38,7 +40,7 @@ const registerUser = async (req, res, next) => {
     }
 
     const hashedPassword = await bcrypt.hash(trimmedPassword, SALT_ROUNDS);
-    const user = await User.create({ email: normalizedEmail, password: hashedPassword });
+    const user = await User.create({ name, email: normalizedEmail, password: hashedPassword });
 
     return res.status(201).json({
       message: "User registered successfully",
@@ -74,7 +76,7 @@ const loginUser = async (req, res, next) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const token = jwt.sign({ userId: user._id, email: user.email }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ userId: user._id, name: user.name, email: user.email }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
 
