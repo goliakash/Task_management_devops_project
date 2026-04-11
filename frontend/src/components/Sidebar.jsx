@@ -1,64 +1,78 @@
+import { useState } from 'react'
 import {
   LayoutDashboard,
   FolderKanban,
-  CalendarDays,
   Users,
   Settings,
   HelpCircle,
-  ChevronDown
-} from 'lucide-react';
+  ChevronDown,
+  ChevronRight,
+  Plus,
+} from 'lucide-react'
+import { useProjects } from '../context/ProjectContext'
 
-function Sidebar({ currentPage, onNavigate }) {
+export default function Sidebar({ currentPage, onNavigate }) {
+  const { projects, activeProject, setActiveProject } = useProjects()
+  const [projectsOpen, setProjectsOpen] = useState(true)
+  const [showCreateProject, setShowCreateProject] = useState(false)
+
+  const handleSelectProject = (project) => {
+    setActiveProject(project)
+    onNavigate('board')
+  }
+
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <div className="logo-placeholder"></div>
-        <h2>taskmanagment</h2>
+        <div className="logo-placeholder" />
+        <h2>TaskFlow</h2>
       </div>
 
       <nav className="sidebar-nav">
         <button
-          className={`nav-item ${currentPage === 'home' ? 'active' : ''}`}
-          onClick={() => onNavigate('home')}
+          className={`nav-item ${currentPage === 'dashboard' ? 'active' : ''}`}
+          onClick={() => onNavigate('dashboard')}
         >
           <LayoutDashboard size={18} />
-          <span>Home</span>
+          <span>Dashboard</span>
         </button>
 
         <div className="nav-group">
           <button
-            className={`nav-item ${currentPage === 'dashboard' ? 'active' : ''}`}
-            onClick={() => onNavigate('dashboard')}
+            className={`nav-item ${currentPage === 'board' ? 'active' : ''}`}
+            onClick={() => setProjectsOpen((o) => !o)}
           >
             <FolderKanban size={18} />
             <span>Projects</span>
-            <ChevronDown size={16} className="ml-auto" />
+            {projectsOpen ? (
+              <ChevronDown size={14} style={{ marginLeft: 'auto' }} />
+            ) : (
+              <ChevronRight size={14} style={{ marginLeft: 'auto' }} />
+            )}
           </button>
-          
-          <div className="nav-subgroup">
-            <button className="nav-subitem active">
-              <span className="dot active-dot"></span> Mindlax
-            </button>
-            <button className="nav-subitem">
-              <span className="dot"></span> SinTech
-            </button>
-            <button className="nav-subitem">
-              <span className="dot"></span> Shopicia
-            </button>
-            <button className="nav-subitem">
-              <span className="dot"></span> Byscape
-            </button>
-          </div>
-        </div>
 
-        <button
-          className={`nav-item ${currentPage === 'calendar' ? 'active' : ''}`}
-          onClick={() => onNavigate('calendar')}
-        >
-          <CalendarDays size={18} />
-          <span>Calendar</span>
-          <ChevronDown size={16} className="ml-auto" />
-        </button>
+          {projectsOpen && (
+            <div className="nav-subgroup">
+              {projects.map((project) => (
+                <button
+                  key={project._id}
+                  className={`nav-subitem ${activeProject?._id === project._id && currentPage === 'board' ? 'active' : ''}`}
+                  onClick={() => handleSelectProject(project)}
+                >
+                  <span className={`dot ${activeProject?._id === project._id && currentPage === 'board' ? 'active-dot' : ''}`} />
+                  {project.name}
+                </button>
+              ))}
+              <button
+                className="nav-subitem"
+                style={{ color: 'var(--accent-blue)' }}
+                onClick={() => onNavigate('projects')}
+              >
+                <Plus size={12} /> New Project
+              </button>
+            </div>
+          )}
+        </div>
 
         <button
           className={`nav-item ${currentPage === 'members' ? 'active' : ''}`}
@@ -66,9 +80,8 @@ function Sidebar({ currentPage, onNavigate }) {
         >
           <Users size={18} />
           <span>Members</span>
-          <ChevronDown size={16} className="ml-auto" />
         </button>
-        
+
         <button
           className={`nav-item ${currentPage === 'settings' ? 'active' : ''}`}
           onClick={() => onNavigate('settings')}
@@ -78,15 +91,13 @@ function Sidebar({ currentPage, onNavigate }) {
         </button>
 
         <button
-          className={`nav-item ${currentPage === 'support' ? 'active' : ''}`}
-          onClick={() => onNavigate('support')}
+          className={`nav-item ${currentPage === 'help' ? 'active' : ''}`}
+          onClick={() => onNavigate('help')}
         >
           <HelpCircle size={18} />
-          <span>Support</span>
+          <span>Help</span>
         </button>
       </nav>
     </aside>
-  );
+  )
 }
-
-export default Sidebar;

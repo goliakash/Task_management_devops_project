@@ -14,34 +14,35 @@ const taskSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Backlog", "To Do", "In Progress", "Need Review", "Completed"],
-      default: "Backlog",
+      enum: ["To Do", "In Progress", "Done"],
+      default: "To Do",
     },
     priority: {
       type: String,
       enum: ["High", "Medium", "Low"],
-      default: "Low",
+      default: "Medium",
     },
     dueDate: {
       type: Date,
     },
-    user: {
+    assignedUser: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    projectId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Project",
+      required: true,
+    },
+    reporter: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-    },
-    attachmentCount: {
-      type: Number,
-      default: 0,
     },
     commentCount: {
       type: Number,
       default: 0,
     },
-    tags: {
-      type: [String],
-      default: [],
-    }
   },
   { timestamps: true }
 );

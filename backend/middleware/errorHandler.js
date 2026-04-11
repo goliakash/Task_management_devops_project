@@ -1,3 +1,5 @@
+const logger = require("../utils/logger");
+
 const notFound = (req, res, next) => {
   res.status(404);
   const error = new Error(`Not Found - ${req.originalUrl}`);
@@ -22,6 +24,8 @@ const errorHandler = (err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
     statusCode = 400;
   }
+
+  logger.error(err.message, { stack: err.stack, statusCode });
 
   res.status(statusCode).json({
     message: err.message || "Server error",

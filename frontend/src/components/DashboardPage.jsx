@@ -1,103 +1,84 @@
 import { useState } from 'react'
-import TaskForm from './TaskForm'
+import { Plus, Filter, LayoutGrid } from 'lucide-react'
 import KanbanBoard from './KanbanBoard'
-import { Lock, Plus, Search, AlignLeft, CalendarDays, LayoutTemplate, Share2, MoreHorizontal } from 'lucide-react'
+import TaskForm from './TaskForm'
+import TaskDetailsModal from './TaskDetailsModal'
+import { useTasks } from '../context/TaskContext'
+import { useProjects } from '../context/ProjectContext'
+import { getUsers } from '../services/api'
+import { useEffect } from 'react'
 
-function DashboardPage({
-  loading,
-  tasks,
-  onAddTask,
-  onDeleteTask,
-  onMoveTask,
-}) {
-  const [showForm, setShowForm] = useState(false)
+const PRIORITIES = ['', 'Low', 'Medium', 'High']
 
-  const handleAddTask = async (taskData) => {
-    await onAddTask(taskData)
-    setShowForm(false)
+export default function DashboardPage() {
+  const { activeProject } = useProjects()
+  const { filters, setFilters, tasks } = useTasks()
+  const [showTaskForm, setShowTaskForm] = useState(false)
+  const [selectedTask, setSelectedTask] = useState(null)
+  const [users, setUsers] = useState([])
+
+  useEffect(() => {
+    getUsers().then(setUsers).catch(() => {})
+  }, [])
+
+  if (!activeProject) {
+    return (
+      <div className="empty-state-full">
+        <LayoutGrid size={48} style={{ color: 'var(--text-muted)', marginBottom: '16px' }} />
+        <h2>No Project Selected</h2>
+        <p>Create or select a project from the sidebar to get started.</p>
+      </div>
+    )
   }
 
   return (
     <div className="dashboard-page">
       <div className="dashboard-header">
-        <div className="breadcrumbs">
-          Projects / Design / Mindlax App
-        </div>
-        
+        <div className="breadcrumbs">Projects / {activeProject.name}</div>
         <div className="project-title-row">
-          <h1>Mindlax Redesign App</h1>
-          <div className="project-actions">
-            <button className="icon-btn-border"><Search size={16} /></button>
-            <button className="icon-btn-border"><LayoutTemplate size={16} /></button>
-            <button className="icon-btn-border"><Share2 size={16} /></button>
-            <button className="icon-btn-border"><MoreHorizontal size={16} /></button>
-          </div>
+          <h1>{activeProject.name}</h1>
         </div>
-
-        <div className="project-meta">
-          <div className="meta-item">
-            <span className="meta-label">Visibility</span>
-            <div className="pill-light"><Lock size={12} /> Private Board</div>
-          </div>
-          
-          <div className="meta-item">
-            <span className="meta-label">Assigned to</span>
-            <div className="avatars-group">
-              <img src="https://i.pravatar.cc/150?img=12" alt="Talan" />
-              <img src="https://i.pravatar.cc/150?img=5" alt="Lydia" />
-              <img src="https://i.pravatar.cc/150?img=60" alt="Jordyn" />
-              <img src="https://i.pravatar.cc/150?img=25" alt="Person" />
-              <img src="https://i.pravatar.cc/150?img=33" alt="Person" />
-              <div className="avatar-more">+4</div>
-              <div className="avatar-more avatar-add"><Plus size={14} /></div>
-            </div>
-          </div>
-
-          <div className="meta-item">
-            <span className="meta-label">Deadline</span>
-            <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>29 Jun 2024 V</span>
-          </div>
-
-          <div className="meta-item">
-            <span className="meta-label">Tags</span>
-            <div className="tags-group">
-              <span className="tag-blue">Mobile App Design</span>
-              <span className="tag-orange">Redesign</span>
-            </div>
-          </div>
-        </div>
+        {activeProject.description && (
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', marginTop: '-16px' }}>
+            {activeProject.description}
+          </p>
+        )}
 
         <div className="view-tabs-row">
-          <div className="tabs-list">
-            <button className="tab-btn"><LayoutTemplate size={16} /> Table</button>
-            <button className="tab-btn active"><AlignLeft size={16} style={{transform: "rotate(90deg)"}}/> Board</button>
-            <button className="tab-btn"><CalendarDays size={16} /> Timeline</button>
-            <button className="tab-btn"><AlignLeft size={16} /> List</button>
+          <div className="filter-bar">
+            <Filter size={14} style={{ color: 'var(--text-muted)' }} />
+            <select
+              className="filter-select"
+              value={filters.priority}
+              onChange={(e) => setFilters((f) => ({ ...f, priority: e.target.value }))}
+            >
+              <option value="">All Priority</option>
+              {PRIORITIES.filter(Boolean).map((p) => <option key={p}>{p}</option>)}
+            </select>
+            <select
+              className="filter-select"
+              value={filters.assignedUser}
+              onChange={(e) => setFilters((f) => ({ ...f, assignedUser: e.target.value }))}
+            >
+              <option value="">All Assignees</option>
+              {users.map((u) => <option key={u._id} value={u._id}>{u.name}</option>)}
+            </select>
           </div>
-          <button className="btn-primary" onClick={() => setShowForm(!showForm)}>
-            <Plus size={16} /> Add new task
+          <button className="btn-primary" onClick={() => setShowTaskForm(true)}>
+            <Plus size={16} /> Add Task
           </button>
         </div>
       </div>
 
-      {showForm && (
-        <div className="task-form-container">
-          <h3>Create New Task</h3>
-          <TaskForm onSubmit={handleAddTask} />
-        </div>
-      )}
+      <KanbanBoard onOpenTask={setSelectedTask} />
 
-      {loading ? (
-        <div className="muted">Loading tasks...</div>
-      ) : (
-        <KanbanBoard
-          tasks={tasks}
-          onDelete={onDeleteTask}
-          onMoveTask={onMoveTask}
+      {showTaskForm && <TaskForm onClose={() => setShowTaskForm(false)} />}
+      {selectedTask && (
+        <TaskDetailsModal
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
         />
       )}
     </div>
   )
 }
-
-export default DashboardPage

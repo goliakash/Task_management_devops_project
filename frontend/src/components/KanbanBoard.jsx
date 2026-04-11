@@ -1,135 +1,158 @@
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
+import { MessageSquare, Calendar, MoreHorizontal, Trash2 } from 'lucide-react'
+import { useTasks } from '../context/TaskContext'
 import { useState } from 'react'
-import { MoreHorizontal, Paperclip, MessageSquare, Target } from 'lucide-react'
 
-// Map statuses to standard columns
 const COLUMNS = [
-  { key: 'Backlog', label: 'Backlog', dotClass: 'col-backlog' },
-  { key: 'To Do', label: 'To Do', dotClass: 'col-todo' },
-  { key: 'In Progress', label: 'In Progress', dotClass: 'col-inprogress' },
-  { key: 'Need Review', label: 'Need Review', dotClass: 'col-review' },
+  { key: 'To Do', label: 'To Do', colorClass: 'col-todo' },
+  { key: 'In Progress', label: 'In Progress', colorClass: 'col-inprogress' },
+  { key: 'Done', label: 'Done', colorClass: 'col-review' },
 ]
 
-function getTaskId(task) {
-  return task.id ?? task._id
+function PriorityBadge({ priority }) {
+  const cls = `priority-badge priority-${priority?.toLowerCase()}`
+  return <span className={cls}>{priority}</span>
 }
 
-function KanbanBoard({ tasks, onDelete, onMoveTask }) {
-  const [dragTaskId, setDragTaskId] = useState(null)
-  const [dragOverColumn, setDragOverColumn] = useState('')
-
-  function getTasksByStatus(status) {
-    return tasks.filter((task) => {
-      // Handle mapping "Pending" from backend to "Backlog" or "To Do"
-      const taskStatus = String(task.status || 'Backlog').toLowerCase();
-      const colStatus = status.toLowerCase();
-      if (colStatus === 'backlog' && taskStatus === 'pending') return true;
-      if (colStatus === 'need review' && taskStatus === 'completed') return true;
-      return taskStatus === colStatus;
-    });
-  }
-
-  function handleDragStart(event, taskId) {
-    setDragTaskId(taskId)
-    event.dataTransfer.effectAllowed = 'move'
-    event.dataTransfer.setData('text/plain', String(taskId))
-  }
-
-  function handleDrop(event, status) {
-    event.preventDefault()
-    const droppedTaskId = dragTaskId ?? event.dataTransfer.getData('text/plain')
-
-    if (!droppedTaskId) {
-      return
-    }
-
-    onMoveTask(droppedTaskId, status)
-    setDragTaskId(null)
-    setDragOverColumn('')
-  }
-
-  if (!tasks || tasks.length === 0) {
-    return <div className="empty-state" style={{width: '100%'}}>No tasks available on the board.</div>
-  }
+function TaskCard({ task, index, onOpen, onDelete }) {
+  const [showMenu, setShowMenu] = useState(false)
+  const assignee = task.assignedUser
+  const dueDate = task.dueDate ? new Date(task.dueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : null
+  const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'Done'
 
   return (
-    <div className="kanban-board">
-      {COLUMNS.map((column) => {
-        const columnTasks = getTasksByStatus(column.key)
-
-        return (
-          <div
-            key={column.key}
-            className={`kanban-column ${column.dotClass}`}
-            onDragOver={(event) => {
-              event.preventDefault()
-              setDragOverColumn(column.key)
-            }}
-            onDragLeave={() => setDragOverColumn('')}
-            onDrop={(event) => handleDrop(event, column.key)}
-          >
-            <div className="column-header">
-              <div className="col-title">
-                <span className="col-dot"></span>
-                {column.label}
-              </div>
-              <div className="col-options">
-                <MoreHorizontal size={18} />
-              </div>
-            </div>
-
-            <div className={`task-list ${dragOverColumn === column.key ? 'drag-over' : ''}`}>
-              {columnTasks.map((task) => {
-                const taskId = getTaskId(task)
-                
-                // Real DB values or fallbacks
-                const priorityLevel = task.priority || 'Low';
-                const priorityClass = `priority-${priorityLevel.toLowerCase()}`;
-                
-                const attachmentCount = task.attachmentCount || 0;
-                const commentCount = task.commentCount || 0;
-
-                // Generating a deterministic avatar based on ID size for aesthetics
-                const u1 = (String(taskId).length || 0) % 70 + 1;
-                const u2 = (String(taskId).length * 2 || 0) % 70 + 1;
-
-                return (
-                  <div
-                    key={taskId}
-                    className="task-card"
-                    draggable
-                    onDragStart={(event) => handleDragStart(event, taskId)}
+    <Draggable draggableId={task._id} index={index}>
+      {(provided, snapshot) => (
+        <div
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          className={`task-card ${snapshot.isDragging ? 'dragging' : ''}`}
+          onClick={() => onOpen(task)}
+        >
+          <div className="card-header">
+            <PriorityBadge priority={task.priority} />
+            <div className="card-menu-wrap" onClick={(e) => e.stopPropagation()}>
+              <button className="col-options" onClick={() => setShowMenu((v) => !v)}>
+                <MoreHorizontal size={16} />
+              </button>
+              {showMenu && (
+                <div className="card-dropdown">
+                  <button
+                    className="card-dropdown-item danger"
+                    onClick={() => { setShowMenu(false); onDelete(task._id) }}
                   >
-                    <div className="card-header">
-                      <div className={`priority-badge ${priorityClass}`}>
-                        <Target size={12} /> {priorityLevel}
-                      </div>
-                      <div className="col-options" onClick={() => onDelete(taskId)} title="Delete Task">
-                        <MoreHorizontal size={16} />
-                      </div>
-                    </div>
-                    
-                    <h3 className="card-title">{task.title}</h3>
-                    <p className="card-desc">{task.description || 'No description added...'}</p>
-                    
-                    <div className="card-footer">
-                      <div className="avatars-group" style={{transform: 'scale(0.85)', transformOrigin: 'left'}}>
-                        <img src={`https://i.pravatar.cc/150?img=${u1}`} alt="User" />
-                        <img src={`https://i.pravatar.cc/150?img=${u2}`} alt="User" />
-                      </div>
-                      <div className="card-stats">
-                        <div className="stat-item"><Paperclip size={14} /> {attachmentCount}</div>
-                        <div className="stat-item"><MessageSquare size={14} /> {commentCount}</div>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
+                    <Trash2 size={13} /> Delete
+                  </button>
+                </div>
+              )}
             </div>
           </div>
-        )
-      })}
-    </div>
+
+          <h3 className="card-title">{task.title}</h3>
+          {task.description && (
+            <p className="card-desc">{task.description}</p>
+          )}
+
+          <div className="card-footer">
+            <div className="card-footer-left">
+              {assignee && (
+                <div className="assignee-avatar" title={assignee.name}>
+                  {assignee.name?.slice(0, 2).toUpperCase()}
+                </div>
+              )}
+            </div>
+            <div className="card-stats">
+              {task.commentCount > 0 && (
+                <span className="stat-item">
+                  <MessageSquare size={12} /> {task.commentCount}
+                </span>
+              )}
+              {dueDate && (
+                <span className={`stat-item ${isOverdue ? 'overdue' : ''}`}>
+                  <Calendar size={12} /> {dueDate}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </Draggable>
   )
 }
 
-export default KanbanBoard
+export default function KanbanBoard({ onOpenTask }) {
+  const { tasks, loadingTasks, updateTask, removeTask } = useTasks()
+
+  const onDragEnd = async (result) => {
+    const { destination, source, draggableId } = result
+    if (!destination || (destination.droppableId === source.droppableId && destination.index === source.index)) return
+    if (destination.droppableId === source.droppableId) return
+
+    await updateTask(draggableId, { status: destination.droppableId })
+  }
+
+  if (loadingTasks) {
+    return (
+      <div className="kanban-board">
+        {COLUMNS.map((col) => (
+          <div key={col.key} className="kanban-column">
+            <div className="column-header">
+              <div className="col-title">
+                <span className={`col-dot ${col.colorClass}`} />
+                {col.label}
+              </div>
+            </div>
+            <div className="task-list">
+              {[1,2].map(i => <div key={i} className="task-card skeleton"><div className="skeleton-line" /><div className="skeleton-line short" /></div>)}
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <DragDropContext onDragEnd={onDragEnd}>
+      <div className="kanban-board">
+        {COLUMNS.map((col) => {
+          const columnTasks = tasks.filter((t) => t.status === col.key)
+          return (
+            <div key={col.key} className={`kanban-column ${col.colorClass}`}>
+              <div className="column-header">
+                <div className="col-title">
+                  <span className="col-dot" />
+                  {col.label}
+                  <span className="col-count">{columnTasks.length}</span>
+                </div>
+              </div>
+              <Droppable droppableId={col.key}>
+                {(provided, snapshot) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                    className={`task-list ${snapshot.isDraggingOver ? 'drag-over' : ''}`}
+                  >
+                    {columnTasks.length === 0 && !snapshot.isDraggingOver && (
+                      <div className="empty-column">Drop tasks here</div>
+                    )}
+                    {columnTasks.map((task, index) => (
+                      <TaskCard
+                        key={task._id}
+                        task={task}
+                        index={index}
+                        onOpen={onOpenTask}
+                        onDelete={removeTask}
+                      />
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </div>
+          )
+        })}
+      </div>
+    </DragDropContext>
+  )
+}
